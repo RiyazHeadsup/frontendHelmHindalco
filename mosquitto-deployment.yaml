@@ -1,0 +1,124 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mosquitto-config
+data:
+  mosquitto.conf: |
+    # MQTT listener
+    listener 1883 0.0.0.0
+    protocol mqtt
+
+    # WebSocket listener
+    listener 9001 0.0.0.0
+    protocol websockets
+
+    # General settings
+    allow_anonymous true
+    log_type all
+    log_type debug
+    connection_messages true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mosquitto-secret
+type: Opaque
+stringData:
+  password_file: |
+    admin:admin123456
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mosquitto-deployment
+  labels:
+    app: mosquitto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mosquitto
+  template:
+    metadata:
+      labels:
+        app: mosquitto
+    spec:
+      securityContext:
+        fsGroup: 1883
+        runAsUser: 1883
+        runAsGroup: 1883
+      containers:
+      - name: mosquitto
+        image: eclipse-mosquitto:2.0.18
+        ports:
+        - name: mqtt
+          containerPort: 1883
+        - name: websocket
+          containerPort: 9001
+        volumeMounts:
+        - name: mosquitto-config
+          mountPath: /mosquitto/config/mosquitto.conf
+          subPath: mosquitto.conf
+        - name: mosquitto-passwd
+          mountPath: /mosquitto/config/password_file
+          subPath: password_file
+        - name: mosquitto-data
+          mountPath: /mosquitto/data
+      volumes:
+      # Add volumes section
+      - name: mosquitto-config
+        configMap:
+          name: mosquitto-config
+      - name: mosquitto-passwd
+        secret:
+          secretName: mosquitto-secret
+      - name: mosquitto-data
+        persistentVolumeClaim:
+          claimName: mosquitto-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mosquitto-service
+spec:
+  type: LoadBalancer
+  ports:
+  - name: mqtt
+    port: 1883
+    targetPort: mqtt
+    protocol: TCP
+  - name: websocket
+    port: 9001
+    targetPort: websocket
+    protocol: TCP
+  selector:
+    app: mosquitto
+---
+
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mosquitto-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+  - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+  storageClassName: manual # Add this
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mosquitto-pvc
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: manual # Add this

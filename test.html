@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+</head>
+<body>
+    <script>
+        const ws = new WebSocket('ws://localhost:9001');
+        
+        ws.onopen = function() {
+            console.log('Connected!');
+        };
+        
+        ws.onerror = function(error) {
+            console.log('WebSocket Error:', error);
+        };
+        
+        ws.onclose = function(e) {
+            console.log('Socket is closed.', e.reason);
+        };
+    </script>
+</body>
+</html>

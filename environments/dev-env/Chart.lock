@@ -1,0 +1,9 @@
+dependencies:
+- name: hindalco-common
+  repository: file://../../hindalco-common
+  version: 0.1.0
+- name: hindalcofe
+  repository: file://../../hindalco-ms/frontend
+  version: 0.1.0
+digest: sha256:4fa13d5afb9a74aeb05e34434f1ef4283291d812b680e4d872971cd712dfe139
+generated: "2025-01-30T16:32:02.63359+05:30"

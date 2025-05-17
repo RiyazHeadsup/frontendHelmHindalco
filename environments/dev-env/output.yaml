@@ -1,0 +1,101 @@
+---
+# Source: dev-env/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hindalcodev-configmap
+data:
+  SPRING_PROFILES_ACTIVE: "default"
+  EUREKA_DEFAULT_ZONE: "http://discovery:8761/eureka/"
+  MONGODB_HOST: "159.89.171.87"
+  MONGODB_PORT: "25755"  
+  MONGODB_DATABASE: "hindalco"
+  JWT_SECRET: "abcd123abcd123"
+  JWT_EXPIRATION: "360000"
+  haproxy.cfg: |
+    global
+      log stdout format raw local0
+      maxconn 1024
+      
+    defaults
+      log global
+      timeout client 60s
+      timeout connect 60s
+      timeout server 60s
+      
+    frontend fe_main
+      bind :80
+      
+      # ACL for paths
+      acl path_api path_beg /api
+      acl path_mqtt path_beg /mqtt
+      
+      # Route based on path
+      use_backend be_broker if path_api
+      use_backend be_mosquitto if path_mqtt
+      
+    backend be_broker
+      mode http
+      server broker broker:8080 check
+      
+    backend be_mosquitto
+      mode tcp
+      server mosquitto mosquitto:1883 check
+---
+# Source: dev-env/charts/hindalcofe/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: hindalcofe
+spec:
+  selector:
+    app: hindalcofe
+  type: LoadBalancer
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+---
+# Source: dev-env/charts/hindalcofe/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: hindalcofe-deployment
+ labels:
+   app: hindalcofe
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: hindalcofe
+ template:
+   metadata:
+     labels:
+       app: hindalcofe
+   spec:
+     hostname: hindalcofe
+     subdomain: hindalcofe
+     containers:
+     - name: hindalcofe
+       image: "hcorptech/hindalcofrontend:0.0.1"
+       ports:
+       - containerPort: 3000
+         protocol: TCP
+       env:
+       - name: EUREKA_INSTANCE_HOSTNAME
+         value: hindalcofe
+       - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+         value: "false"
+       - name: SPRING_APPLICATION_NAME
+         value: hindalcofe
+       resources:
+         requests:
+           cpu: 
+           memory: 512Mi
+         limits:
+           cpu: 
+           memory: 768Mi
+---
+# Source: dev-env/charts/hindalcofe/templates/ingress.yaml
+#

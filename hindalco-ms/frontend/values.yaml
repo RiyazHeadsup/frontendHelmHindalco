@@ -1,0 +1,47 @@
+global:
+  configMapName: hindalcodev-configmap
+
+deploymentName: hindalcofe-deployment
+serviceName: hindalcofe
+appLabel: hindalcofe
+appName: hindalcofe
+replicaCount: 1
+
+image:
+  repository: hcorptech/hindalcofrontend
+  tag: 0.0.1
+
+containerPort: 80
+
+service:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 3000
+    targetPort: 80
+    protocol: TCP
+
+resources:
+  requests:
+    memory: "512Mi"
+  limits:
+    memory: "768Mi" # Increased to accommodate JVM memory requirements
+
+# Feature flags
+appname_enabled: true
+profile_enabled: false
+discovery_enable: false
+mongo_host_enable: false
+jwt_enable: false
+
+# Ingress Configuration
+ingress:
+  enabled: true
+  host: "localhost"
+  path: "/"
+  pathType: "Prefix"
+  ingressType: "haproxy" # Changed from nginx to haproxy
+  annotations:
+    kubernetes.io/ingress.class: "haproxy"
+    ingress.kubernetes.io/ssl-redirect: "false"
+    ingress.kubernetes.io/rewrite-target: "/"

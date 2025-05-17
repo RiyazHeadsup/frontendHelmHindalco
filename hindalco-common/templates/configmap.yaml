@@ -1,0 +1,44 @@
+{{- define "common.configmap" -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.global.configMapName }}
+data:
+  SPRING_PROFILES_ACTIVE: {{ .Values.global.activeProfile | quote }}
+  EUREKA_DEFAULT_ZONE: {{ .Values.global.discovery | quote }}
+  MONGODB_HOST: {{ .Values.global.mongodb_host | quote }}
+  MONGODB_PORT: {{ .Values.global.mongodb_port | quote }}  
+  MONGODB_DATABASE: {{ .Values.global.mongodb_database | quote }}
+  JWT_SECRET: {{ .Values.global.secret_jwt | quote }}
+  JWT_EXPIRATION: {{ .Values.global.exprire_jwt | quote }}
+  haproxy.cfg: |
+    global
+      log stdout format raw local0
+      maxconn 1024
+      
+    defaults
+      log global
+      timeout client 60s
+      timeout connect 60s
+      timeout server 60s
+      
+    frontend fe_main
+      bind :80
+      
+      # ACL for paths
+      acl path_api path_beg /api
+      acl path_mqtt path_beg /mqtt
+      
+      # Route based on path
+      use_backend be_broker if path_api
+      use_backend be_mosquitto if path_mqtt
+      
+    backend be_broker
+      mode http
+      server broker broker:8080 check
+      
+    backend be_mosquitto
+      mode tcp
+      server mosquitto mosquitto:1883 check
+
+{{- end -}}

@@ -1,0 +1,112 @@
+# Create a namespace for HAProxy
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: haproxy-controller
+---
+# Create RBAC configurations
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: haproxy-ingress-service-account
+  namespace: haproxy-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: haproxy-ingress-cluster-role
+rules:
+- apiGroups: [ "" ]
+  resources: [ "configmaps", "endpoints", "nodes", "pods", "services", "secrets" ]
+  verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "networking.k8s.io" ]
+  resources: [ "ingresses", "ingressclasses" ]
+  verbs: [ "get", "list", "watch" ]
+- apiGroups: [ "" ]
+  resources: [ "events" ]
+  verbs: [ "create", "patch" ]
+- apiGroups: [ "networking.k8s.io" ]
+  resources: [ "ingresses/status" ]
+  verbs: [ "update" ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: haproxy-ingress-cluster-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: haproxy-ingress-cluster-role
+subjects:
+- kind: ServiceAccount
+  name: haproxy-ingress-service-account
+  namespace: haproxy-controller
+---
+# Deploy HAProxy Ingress Controller
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: haproxy-ingress
+  namespace: haproxy-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: haproxy-ingress
+  template:
+    metadata:
+      labels:
+        app: haproxy-ingress
+    spec:
+      serviceAccountName: haproxy-ingress-service-account
+      containers:
+      - name: haproxy-ingress
+        image: haproxytech/kubernetes-ingress:latest
+        args:
+        - --controller-class=haproxy
+        - --configmap=haproxy-controller/haproxy-config
+        ports:
+        - name: http
+          containerPort: 80
+        - name: https
+          containerPort: 443
+        - name: stat
+          containerPort: 1024
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 1024
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 1024
+---
+# Create a service to expose HAProxy
+apiVersion: v1
+kind: Service
+metadata:
+  name: haproxy-ingress
+  namespace: haproxy-controller
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    targetPort: 80
+  - name: https
+    port: 443
+    targetPort: 443
+  - name: stat
+    port: 1024
+    targetPort: 1024
+  selector:
+    app: haproxy-ingress
+---
+# Create default configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: haproxy-config
+  namespace: haproxy-controller
+data:
+  ssl-redirect: "false"
