@@ -19,7 +19,7 @@ nodeSelector:
 containerPort: 3000  # Fixed port mismatch
 
 service:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
   - name: http
     port: 3000
