@@ -26,11 +26,13 @@ service:
     targetPort: 3000  # Match container port
     protocol: TCP
 
-# resources:
-#   requests:
-#     memory: "512Mi"
-#   limits:
-#     memory: "768Mi"
+resources:
+  requests:
+    memory: "1Gi"      # Increased from 512Mi
+    cpu: "500m"        # Added CPU requests
+  limits:
+    memory: "2Gi"      # Increased from 768Mi  
+    cpu: "1000m"       # Added CPU limits (1 core)
 
 # Feature flags
 appname_enabled: true
