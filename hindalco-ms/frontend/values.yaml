@@ -10,22 +10,27 @@ replicaCount: 1
 image:
   repository: hcorptech/hindalcofrontend
   tag: 0.0.1
+  pullPolicy: Always  # Force re-pull
 
-containerPort: 80
+# Add this to ensure correct architecture
+nodeSelector:
+  kubernetes.io/arch: amd64
+
+containerPort: 3000  # Fixed port mismatch
 
 service:
   type: LoadBalancer
   ports:
   - name: http
     port: 3000
-    targetPort: 80
+    targetPort: 3000  # Match container port
     protocol: TCP
 
 resources:
   requests:
     memory: "512Mi"
   limits:
-    memory: "768Mi" # Increased to accommodate JVM memory requirements
+    memory: "768Mi"
 
 # Feature flags
 appname_enabled: true
@@ -33,15 +38,3 @@ profile_enabled: false
 discovery_enable: false
 mongo_host_enable: false
 jwt_enable: false
-
-# # Ingress Configuration
-# ingress:
-#   enabled: true
-#   host: "localhost"
-#   path: "/"
-#   pathType: "Prefix"
-#   ingressType: "haproxy" # Changed from nginx to haproxy
-#   annotations:
-#     kubernetes.io/ingress.class: "haproxy"
-#     ingress.kubernetes.io/ssl-redirect: "false"
-#     ingress.kubernetes.io/rewrite-target: "/"
