@@ -34,14 +34,14 @@ discovery_enable: false
 mongo_host_enable: false
 jwt_enable: false
 
-# Ingress Configuration
-ingress:
-  enabled: true
-  host: "localhost"
-  path: "/"
-  pathType: "Prefix"
-  ingressType: "haproxy" # Changed from nginx to haproxy
-  annotations:
-    kubernetes.io/ingress.class: "haproxy"
-    ingress.kubernetes.io/ssl-redirect: "false"
-    ingress.kubernetes.io/rewrite-target: "/"
+# # Ingress Configuration
+# ingress:
+#   enabled: true
+#   host: "localhost"
+#   path: "/"
+#   pathType: "Prefix"
+#   ingressType: "haproxy" # Changed from nginx to haproxy
+#   annotations:
+#     kubernetes.io/ingress.class: "haproxy"
+#     ingress.kubernetes.io/ssl-redirect: "false"
+#     ingress.kubernetes.io/rewrite-target: "/"
