@@ -1,6 +1,6 @@
 global:
   configMapName: hindalcodev-configmap
-  activeProfile: default
+  activeProfile: frontend
   discovery: http://discovery:8761/eureka/
   mongodb_host: 159.89.171.87
   mongodb_port: 25755

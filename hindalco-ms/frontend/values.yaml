@@ -1,5 +1,5 @@
 global:
-  configMapName: hindalcodev-configmap
+  configMapName: hindalcodevfe-configmap
 
 deploymentName: hindalcofe-deployment
 serviceName: hindalcofe
