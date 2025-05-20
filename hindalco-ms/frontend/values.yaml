@@ -28,11 +28,11 @@ service:
 
 resources:
   requests:
-    memory: "1Gi"      # Increased from 512Mi
-    cpu: "500m"        # Added CPU requests
+    memory: "4Gi"      # Increased from 512Mi
+    cpu: "1000m"        # Added CPU requests
   limits:
     memory: "2Gi"      # Increased from 768Mi  
-    cpu: "1000m"       # Added CPU limits (1 core)
+    cpu: "4000m"       # Added CPU limits (1 core)
 
 # Feature flags
 appname_enabled: true
