@@ -1,9 +1,3 @@
 global:
   configMapName: hindalcodevfe-configmap
-  activeProfile: frontend
-  discovery: http://discovery:8761/eureka/
-  mongodb_host: 159.89.171.87
-  mongodb_port: 25755
-  mongodb_database: hindalco
-  secret_jwt: abcd123abcd123
-  exprire_jwt: 360000
+  activeProfile: default
