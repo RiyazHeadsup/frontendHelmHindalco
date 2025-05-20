@@ -8,8 +8,8 @@ appName: hindalcofe
 replicaCount: 1
 
 image:
-  repository: hcorptech/hindalcofrontend
-  tag: 0.0.1
+  repository: hcorptech/new-frontend
+  tag: latest
   pullPolicy: Always  # Force re-pull
 
 # Add this to ensure correct architecture
